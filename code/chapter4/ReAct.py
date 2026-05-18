@@ -46,7 +46,7 @@ class ReActAgent:
             response_text = self.llm_client.think(messages=messages)
             if not response_text:
                 print("错误：LLM未能返回有效响应。"); break
-
+            # 单个前下划线的作用是表明这个方法是类的内部方法，建议外部不要直接调用它。类似private方法的概念，但在Python中并没有真正的私有方法。
             thought, action = self._parse_output(response_text)
             if thought: print(f"🤔 思考: {thought}")
             if not action: print("警告：未能解析出有效的Action，流程终止。"); break

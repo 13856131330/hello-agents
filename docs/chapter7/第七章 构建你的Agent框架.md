@@ -648,38 +648,31 @@ import re
 
 class MySimpleAgent(SimpleAgent):
     # ... 前面的 __init__ 方法
-
     def run(self, input_text: str, max_tool_iterations: int = 3, **kwargs) -> str:
-        """
-        重写的运行方法 - 实现简单对话逻辑，支持可选工具调用
-        """
-        print(f"🤖 {self.name} 正在处理: {input_text}")
+        "重写的运行方法-实现简单的对话"
 
+        print(f"{self.name}正在处理: {input_text}")
         # 构建消息列表
         messages = []
-
-        # 添加系统消息（可能包含工具信息）
+        # 添加系统消息
         enhanced_system_prompt = self._get_enhanced_system_prompt()
-        messages.append({"role": "system", "content": enhanced_system_prompt})
-
-        # 添加历史消息
+        messages.append({"role": "system","content": nhanced_system_prompt})
+        # 添加历史消息   
         for msg in self._history:
             messages.append({"role": msg.role, "content": msg.content})
-
         # 添加当前用户消息
-        messages.append({"role": "user", "content": input_text})
+        messages.append({"role":"user", "content":input_text})
 
         # 如果没有启用工具调用，使用简单对话逻辑
         if not self.enable_tool_calling:
-            response = self.llm.invoke(messages, **kwargs)
+            response = self.llm.invoke
             self.add_message(Message(input_text, "user"))
             self.add_message(Message(response, "assistant"))
-            print(f"✅ {self.name} 响应完成")
             return response
 
-        # 支持多轮工具调用的逻辑
-        return self._run_with_tools(messages, input_text, max_tool_iterations, **kwargs)
+        return self._run_with_tools(Messages, input_text, max_tool_interations, **kwargs)
 
+ 
     def _get_enhanced_system_prompt(self) -> str:
         """构建增强的系统提示词，包含工具信息"""
         base_prompt = self.system_prompt or "你是一个有用的AI助手。"
@@ -1409,6 +1402,7 @@ class ToolRegistry:
     """HelloAgents工具注册表"""
 
     def __init__(self):
+        # 现场创建的类，不需要先定义再使用，直接创建_tools
         self._tools: dict[str, Tool] = {}
         self._functions: dict[str, dict[str, Any]] = {}
 

@@ -32,7 +32,6 @@ def get_weather(city: str) -> str:
     """
     # API端点，我们请求JSON格式的数据
     url = f"https://wttr.in/{city}?format=j1"
-    
     try:
         # 发起网络请求
         response = requests.get(url)
@@ -40,7 +39,6 @@ def get_weather(city: str) -> str:
         response.raise_for_status() 
         # 解析返回的JSON数据
         data = response.json()
-        
         # 提取当前天气状况
         current_condition = data['current_condition'][0]
         weather_desc = current_condition['weatherDesc'][0]['value']
@@ -142,11 +140,14 @@ import re
 
 # --- 1. 配置LLM客户端 ---
 # 请根据您使用的服务，将这里替换成对应的凭证和地址
-API_KEY = "YOUR_API_KEY"
-BASE_URL = "YOUR_BASE_URL"
-MODEL_ID = "YOUR_MODEL_ID"
-os.environ['TAVILY_API_KEY'] = "YOUR_TAVILY_API_KEY"
+from dotenv import load_dotenv
+load_dotenv()
+API_KEY = os.getenv("LLM_API_KEY")
+BASE_URL = os.getenv("LLM_BASE_URL")
+MODEL_ID = os.getenv("LLM_MODEL_ID")
+os.environ['TAVILY_API_KEY'] = os.getenv("TAVILY_API_KEY")
 
+# 实例化一个OpenAICompatibleClient，注意Python实例化对象不需要new
 llm = OpenAICompatibleClient(
     model=MODEL_ID,
     api_key=API_KEY,
@@ -154,18 +155,19 @@ llm = OpenAICompatibleClient(
 )
 
 # --- 2. 初始化 ---
-user_prompt = "你好，请帮我查询一下今天北京的天气，然后根据天气推荐一个合适的旅游景点。"
+# 类型不在变量上，而是在对象上，变量本身没有任何类型，他只是一个名字
+user_prompt = "你好，请帮我查询一下今天上海的天气，然后根据天气推荐一个合适的旅游景点。"
 prompt_history = [f"用户请求: {user_prompt}"]
-
+# 在 Python 中， f"..." 这种语法被称为 f-string 
+# （Formatted String Literals，格式化字符串字面量）
+# 它允许在字符串中嵌入变量，而不需要使用 + 或 format() 方法
 print(f"用户输入: {user_prompt}\n" + "="*40)
 
 # --- 3. 运行主循环 ---
 for i in range(5): # 设置最大循环次数
     print(f"--- 循环 {i+1} ---\n")
-    
     # 3.1. 构建Prompt
     full_prompt = "\n".join(prompt_history)
-    
     # 3.2. 调用LLM进行思考
     llm_output = llm.generate(full_prompt, system_prompt=AGENT_SYSTEM_PROMPT)
     # 模型可能会输出多余的Thought-Action，需要截断
@@ -177,7 +179,6 @@ for i in range(5): # 设置最大循环次数
             print("已截断多余的 Thought-Action 对")
     print(f"模型输出:\n{llm_output}\n")
     prompt_history.append(llm_output)
-    
     # 3.3. 解析并执行行动
     action_match = re.search(r"Action: (.*)", llm_output, re.DOTALL)
     if not action_match:
@@ -194,6 +195,7 @@ for i in range(5): # 设置最大循环次数
         break
     
     tool_name = re.search(r"(\w+)\(", action_str).group(1)
+    print(f"发现工具: {tool_name}")
     args_str = re.search(r"\((.*)\)", action_str).group(1)
     kwargs = dict(re.findall(r'(\w+)="([^"]*)"', args_str))
 

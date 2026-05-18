@@ -19,7 +19,8 @@ from tavily import TavilyClient
 # 加载环境变量
 load_dotenv()
 
-# 定义状态结构
+# 定义状态结构，Annotated allows you to attach extra information to a type hint:
+# metadata（元数据）= 给类型注解贴的「附加标签 / 说明信息」
 class SearchState(TypedDict):
     messages: Annotated[list, add_messages]
     user_query: str        # 用户查询
@@ -30,9 +31,9 @@ class SearchState(TypedDict):
 
 # 初始化模型和Tavily客户端
 llm = ChatOpenAI(
-    model=os.getenv("LLM_MODEL_ID", "gpt-4o-mini"),
+    model=os.getenv("LLM_MODEL_ID"),
     api_key=os.getenv("LLM_API_KEY"),
-    base_url=os.getenv("LLM_BASE_URL", "https://api.openai.com/v1"),
+    base_url=os.getenv("LLM_BASE_URL"),
     temperature=0.7
 )
 
